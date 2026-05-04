@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator pothos {
+  provider     = "prisma-pothos-types"
+  clientOutput = "@prisma/client"
+  output       = "../node_modules/@pothos/plugin-prisma/generated.ts"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model User {
+  id               String       @id @default(cuid())
+  email            String       @unique
+  name             String?
+  image            String?
+  emailVerified    DateTime?
+  plan             Plan         @default(FREE)
+  stripeCustomerId String?
+  accounts         Account[]
+  sessions         Session[]
+  postings         JobPosting[]
+  createdAt        DateTime     @default(now())
+}
+
+enum Plan {
+  FREE
+  PRO
+  TEAM
+}
+
+model JobPosting {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  title         String
+  company       String
+  location      String
+  jobType       JobType       @default(FULL_TIME)
+  category      String        @default("Engineering")
+  salaryMin     Int?
+  salaryMax     Int?
+  currency      String        @default("KRW")
+  description   String        @default("") @db.Text
+  requirements  String[]
+  benefits      String[]
+  status        PostingStatus @default(DRAFT)
+  aiScore       Int?
+  aiSuggestions Json?
+  views         Int           @default(0)
+  applications  Int           @default(0)
+  publishedAt   DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+}
+
+enum PostingStatus {
+  DRAFT
+  PUBLISHED
+  PAUSED
+  EXPIRED
+}
