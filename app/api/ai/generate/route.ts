@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { streamJobPostingGeneration, type GenerateInput } from '@/lib/ai/generator'
 import { NextRequest } from 'next/server'
 
-if (!process.env.ANTHROPIC_API_KEY) {
-  throw new Error('ANTHROPIC_API_KEY is required')
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error('OPENAI_API_KEY is required')
 }
 
 export async function POST(req: NextRequest) {

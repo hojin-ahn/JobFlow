@@ -1,7 +1,7 @@
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 })
 
 export interface GenerateInput {
@@ -59,18 +59,21 @@ Return ONLY valid JSON in this exact format:
   return new ReadableStream({
     async start(controller) {
       try {
-        const stream = client.messages.stream({
-          model: 'claude-sonnet-4-5',
+        const stream = await client.chat.completions.create({
+          model: 'gpt-4o',
           max_tokens: 2000,
-          system: SYSTEM_PROMPT,
-          messages: [{ role: 'user', content: userPrompt }],
+          stream: true,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: userPrompt },
+          ],
         })
 
         let fullText = ''
 
-        for await (const event of stream) {
-          if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-            const text = event.delta.text
+        for await (const chunk of stream) {
+          const text = chunk.choices[0]?.delta?.content ?? ''
+          if (text) {
             fullText += text
             const sseData = JSON.stringify({ text })
             controller.enqueue(encoder.encode(`data: ${sseData}\n\n`))

@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { scorePosting } from '@/lib/ai/scorer'
 import { NextRequest } from 'next/server'
 
-if (!process.env.ANTHROPIC_API_KEY) {
-  throw new Error('ANTHROPIC_API_KEY is required')
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error('OPENAI_API_KEY is required')
 }
 
 export async function POST(req: NextRequest) {

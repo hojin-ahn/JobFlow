@@ -1,8 +1,8 @@
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import type { PostingDraft } from '@/stores/editorStore'
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 })
 
 export interface ScoringResult {
@@ -64,13 +64,13 @@ Scoring criteria:
 Grade: A=85+, B=70-84, C=55-69, D=0-54
 Provide 2-4 actionable suggestions ordered by impact.`
 
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-5',
+  const response = await client.chat.completions.create({
+    model: 'gpt-4o',
     max_tokens: 1000,
     messages: [{ role: 'user', content: prompt }],
   })
 
-  const text = response.content[0].type === 'text' ? response.content[0].text : ''
+  const text = response.choices[0]?.message?.content ?? ''
   const jsonMatch = text.match(/\{[\s\S]*\}/)
   if (!jsonMatch) throw new Error('Could not parse scoring response')
 
