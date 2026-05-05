@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { CandidatePreview } from '@/components/preview/CandidatePreview'
 import type { PostingDraft } from '@/stores/editorStore'
 import Link from 'next/link'
+import { BackButton } from './BackButton'
 
 export default async function PublicPreviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -39,7 +40,10 @@ export default async function PublicPreviewPage({ params }: { params: Promise<{ 
             </div>
             JobFlow
           </Link>
-          <span className="text-xs text-gray-400">Candidate preview</span>
+          <div className="flex items-center gap-3">
+            <BackButton editHref={`/postings/${id}/edit`} />
+            <span className="text-xs text-gray-400">Candidate preview</span>
+          </div>
         </div>
         <CandidatePreview posting={draft} />
         <p className="text-center text-xs text-gray-400 mt-4">

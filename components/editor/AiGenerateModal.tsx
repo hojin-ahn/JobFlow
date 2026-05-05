@@ -29,6 +29,7 @@ export function AiGenerateModal({ open, onClose }: AiGenerateModalProps) {
   })
   const [isStreaming, setIsStreaming] = useState(false)
   const [streamedText, setStreamedText] = useState('')
+  const [isPlanBlocked, setIsPlanBlocked] = useState(false)
 
   const handleGenerate = async () => {
     setIsStreaming(true)
@@ -42,6 +43,12 @@ export function AiGenerateModal({ open, onClose }: AiGenerateModalProps) {
         body: JSON.stringify(form),
       })
 
+      if (res.status === 403) {
+        setIsPlanBlocked(true)
+        setIsStreaming(false)
+        setIsGenerating(false)
+        return
+      }
       if (!res.ok) throw new Error('Generation failed')
       if (!res.body) throw new Error('No stream body')
 
@@ -106,7 +113,32 @@ export function AiGenerateModal({ open, onClose }: AiGenerateModalProps) {
           <DialogTitle>Generate with AI</DialogTitle>
         </DialogHeader>
 
-        {isStreaming ? (
+        {isPlanBlocked ? (
+          <div className="space-y-4 py-4">
+            <div className="flex flex-col items-center gap-3 text-center">
+              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-2xl">
+                ✨
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">Pro 플랜 전용 기능입니다</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  AI 공고 생성은 Pro 플랜 이상에서만 사용할 수 있습니다.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" onClick={onClose} className="flex-1">
+                닫기
+              </Button>
+              <Button
+                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white"
+                onClick={() => { onClose(); window.location.href = '/pricing' }}
+              >
+                Pro로 업그레이드
+              </Button>
+            </div>
+          </div>
+        ) : isStreaming ? (
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
